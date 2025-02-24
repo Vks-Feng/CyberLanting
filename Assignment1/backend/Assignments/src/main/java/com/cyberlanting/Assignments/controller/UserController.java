@@ -1,10 +1,13 @@
 package com.cyberlanting.Assignments.controller;
 
 import com.cyberlanting.Assignments.pojo.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@Tag(name = "用户模块")
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -17,6 +20,7 @@ public class UserController {
      *
      * @return
      */
+    @Operation(summary = "获取用户列表")
     @GetMapping("/")
     public List<User> getUserList() {
         // 还可以通过@RequestParam从页面中传递参数来进行查询条件或者翻页信息的传递
@@ -30,6 +34,7 @@ public class UserController {
      * @param user
      * @return
      */
+    @Operation(summary = "新建用户")
     @PostMapping("/")
     public String postUser(@RequestBody User user) {
         // @RequestBody注解用来绑定通过http请求中application/json类型上传的数据
@@ -43,6 +48,7 @@ public class UserController {
      * @param id
      * @return
      */
+    @Operation(summary = "根据id获取用户")
     @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) {
         // url中的id可通过@PathVariable绑定到函数的参数中
@@ -56,6 +62,7 @@ public class UserController {
      * @param user
      * @return
      */
+    @Operation(summary = "根据id修改用户")
     @PutMapping("/{id}")
     public String putUser(@PathVariable Long id, @RequestBody User user) {
         User u = users.get(id);
@@ -71,6 +78,7 @@ public class UserController {
      * @param id
      * @return
      */
+    @Operation(summary = "删除用户")
     @DeleteMapping("/{id}")
     public String deleteUser(@PathVariable Long id) {
         users.remove(id);
