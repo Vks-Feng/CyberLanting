@@ -1,0 +1,11 @@
+spring:
+  application:
+   name: Assignments
+
+#springdoc:
+#  api-docs:
+#    enable: true
+#    path: /v3/api-docs
+#  swagger-ui:
+#    enable: true
+#    path: /swagger-ui.html
