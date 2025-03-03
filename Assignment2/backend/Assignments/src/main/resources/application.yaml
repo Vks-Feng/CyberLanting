@@ -1,0 +1,16 @@
+spring:
+  application:
+   name: Assignments
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/rjgc?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+
+mybatis:
+  #mapper配置文件
+  mapper-locations: mapper/*.xml
+  type-aliases-package: com.cyberlanting.Assignments.pojo
+  configuration:
+    #开启驼峰命名
+    map-underscore-to-camel-case: true
