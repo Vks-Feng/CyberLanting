@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.mapper.ObjectiveMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO objective (id, user_id, name, description, start_date, end_date, visibility, progress, weight, completed_at, created_at, updated_at)
+        VALUES (#{id}, #{userId}, #{name}, #{description}, #{startDate}, #{endDate}, #{visibility}, #{progress}, #{weight}, #{completedAt}, #{createdAt}, #{updatedAt})
+    </insert>
+    
+    <update id="updateById">
+        UPDATE objective
+        <set>
+            <if test="objective.name != null">name = #{objective.name},</if>
+            <if test="objective.description != null">description = #{objective.description},</if>
+            <if test="objective.startDate != null">start_date = #{objective.startDate},</if>
+            <if test="objective.endDate != null">end_date = #{objective.endDate},</if>
+            <if test="objective.completedAt != null">completed_at = #{objective.completedAt},</if>
+        </set>
+        where id = #{objectiveId}
+    </update>
+    <update id="updateProgress">
+        UPDATE objective
+        SET progress = #{progress}
+        WHERE id = #{objectiveId}
+    </update>
+    <update id="completeObjectiveById">
+        UPDATE objective
+        SET completed_at = #{now}
+        WHERE id = #{objectiveId}
+    </update>
+
+    <insert id="createObjectiveRelation">
+        INSERT INTO objective_relationship (father_id, child_id)
+        VALUES (#{parentObjectiveId}, #{childObjectiveId})
+    </insert>
+    <insert id="addAiGuideForObjective">
+        INSERT INTO objective_ai (objective_id, ai_guide)
+        VALUES (#{objectiveId}, #{aiGuide})
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM objective WHERE id = #{objectiveId}
+    </delete>
+    <delete id="deleteRelationByChildId">
+        DELETE FROM objective_relationship WHERE child_id = #{objectiveId}
+    </delete>
+    <delete id="deleteRelationByFatherId">
+        DELETE FROM objective_relationship WHERE father_id = #{objectiveId}
+    </delete>
+    <delete id="deleteObjectiveRelation">
+        DELETE FROM objective_relationship WHERE father_id = #{parentObjectiveId} AND child_id = #{childObjectiveId}
+    </delete>
+    <delete id="deleteAiGuideForObjective">
+        DELETE FROM objective_ai WHERE objective_id = #{objectiveId}
+    </delete>
+
+    <select id="selectById" resultType="com.vksfeng.quan.objectivehub_pojo.entity.Objective">
+        SELECT * FROM objective WHERE id = #{id}
+    </select>
+    <select id="getAllSubObjectivesId" resultType="java.lang.Long">
+        SELECT child_id FROM objective_relationship where father_id = #{objectiveId}
+    </select>
+    <select id="getAllMainObjectivesId" resultType="java.lang.Long">
+        SELECT father_id FROM objective_relationship where child_id = #{objectiveId}
+    </select>
+    <select id="getAllObjectivesId" resultType="java.lang.Long">
+        SELECT id FROM objective where user_id = #{userId}
+    </select>
+    <select id="getAllMainObjectives" resultType="com.vksfeng.quan.objectivehub_pojo.entity.Objective">
+        SELECT * FROM objective WHERE id IN
+        <foreach collection="mainObjectivesIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="isSubObjective" resultType="java.lang.Boolean">
+        SELECT EXISTS(
+                SELECT 1
+                FROM objective_relationship
+                WHERE child_id = #{objectiveId}
+        )
+    </select>
+    <select id="getObjectiveCount" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+            FROM
+            objective o
+            WHERE
+                o.user_id = #{userId}
+            AND
+                NOT EXISTS (
+                    SELECT 1
+                    FROM objective_relationship r
+                    WHERE r.child_id = o.id
+                )
+    </select>
+    <select id="getCompletedObjectiveCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM objective WHERE user_id = #{userId} AND completed_at IS NOT NULL
+    </select>
+    <select id="getAiGuideForObjective" resultType="java.lang.String">
+        SELECT ai_guide FROM objective_ai WHERE objective_id = #{objectiveId}
+    </select>
+    <select id="getFatherObjectiveIdBySubObjectiveId" resultType="java.lang.Long">
+        SELECT father_id FROM objective_relationship WHERE child_id = #{objectiveId}
+    </select>
+</mapper>

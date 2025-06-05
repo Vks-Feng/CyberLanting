@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.mapper.TaskMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO task (user_id, name, description, status, visibility, type, created_at, updated_at, ddl, completed_at, period, start_date, end_date, completed_count, total_count)
+        VALUES (#{userId}, #{name}, #{description}, #{status}, #{visibility}, #{type}, #{createdAt}, #{updatedAt}, #{ddl}, #{completedAt}, #{period}, #{startDate}, #{endDate}, #{completedCount}, #{totalCount})
+    </insert>
+    <insert id="insertObjectiveTaskRelation">
+        INSERT INTO objective_task (objective_id, task_id)
+        VALUES (#{objectiveId}, #{taskId})
+    </insert>
+    <insert id="createObjectiveTaskRelation">
+        INSERT INTO objective_task (objective_id, task_id)
+        VALUES (#{objectiveId}, #{taskId})
+    </insert>
+
+    <update id="updateById">
+        UPDATE task
+        <set>
+            <if test="task.name != null">name = #{task.name},</if>
+            <if test="task.description != null">description = #{task.description},</if>
+            <if test="task.status != null">status = #{task.status},</if>
+            <if test="task.visibility != null">visibility = #{task.visibility},</if>
+            <if test="task.ddl != null">ddl = #{task.ddl},</if>
+            <if test="task.period != null">period = #{task.period},</if>
+            <if test="task.startDate != null">start_date = #{task.startDate},</if>
+            <if test="task.endDate != null">end_date = #{task.endDate},</if>
+            <if test="task.completedAt != null">completed_at = #{task.completedAt},</if>
+            <if test="task.updatedAt != null">updated_at = #{task.updatedAt},</if>
+            <if test="task.completedCount != null">completed_count = #{task.completedCount},</if>
+            <if test="task.totalCount != null">total_count = #{task.totalCount},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM task WHERE id = #{id}
+    </delete>
+    <delete id="deleteObjectiveTaskRelationByTaskId">
+        DELETE FROM objective_task WHERE task_id = #{id}
+    </delete>
+    <delete id="deleteObjectiveTaskRelationByObjectiveId">
+        DELETE FROM objective_task WHERE objective_id = #{objectiveId}
+    </delete>
+    <delete id="deleteObjectiveTaskRelation">
+        DELETE FROM objective_task WHERE objective_id = #{objectiveId} AND task_id = #{taskId}
+    </delete>
+    <delete id="deleteTaskCompletionByTaskId">
+        DELETE FROM task_completion WHERE task_id = #{taskId}
+    </delete>
+    <delete id="deleteTaskCompletionByRecordId">
+        DELETE FROM task_completion WHERE id = #{id}
+    </delete>
+    <select id="selectById" resultType="com.vksfeng.quan.objectivehub_pojo.entity.Task">
+        SELECT * FROM task WHERE id = #{id}
+    </select>
+    <select id="getObjectiveIdByTaskId" resultType="java.lang.Long">
+        SELECT objective_id FROM objective_task WHERE task_id = #{id}
+    </select>
+    <select id="getTodayTasks" resultType="com.vksfeng.quan.objectivehub_pojo.vo.TaskVO">
+        <![CDATA[
+        SELECT *
+        FROM task
+        WHERE
+        user_id = #{userId}
+        AND (
+        (type = 'single' AND ddl >= #{today})
+        OR
+        (type = 'recurring' AND start_date <= #{today} AND (end_date >= #{today} OR end_date IS NULL))
+        )
+        ]]>
+    </select>
+    <select id="getAllTasksIdByObjectiveId" resultType="java.lang.Long">
+        SELECT task_id FROM objective_task WHERE objective_id = #{objectiveId}
+    </select>
+    <select id="getMonthlyTasksCalendar" resultType="com.vksfeng.quan.objectivehub_pojo.vo.TaskVO">
+        <![CDATA[
+        SELECT *
+        FROM task
+        WHERE user_id = #{userId}
+        AND (
+        (type = 'single' AND MONTH(ddl) = #{month} AND YEAR(ddl) = #{year})
+        OR
+        (type = 'recurring' AND (
+        (YEAR(start_date) < #{year} OR (YEAR(start_date) = #{year} AND MONTH(start_date) <= #{month}))
+        AND
+        (YEAR(end_date) > #{year} OR (YEAR(end_date) = #{year} AND MONTH(end_date) >= #{month}))
+        ))
+        )
+        ]]>
+    </select>
+    <select id="getMonthlyTasksHeatMap" resultType="com.vksfeng.quan.analysis_pojo.vo.HeatMapVO">
+        <![CDATA[
+            SELECT
+                DATE(ddl) AS date,
+                COUNT(*) AS count
+            FROM task
+            WHERE user_id = #{userId}
+            AND type = 'single'
+            AND YEAR(ddl) = #{year}
+            AND MONTH(ddl) = #{month}
+            GROUP BY DATE(ddl)
+
+            UNION ALL
+
+            SELECT
+                DATE_ADD(start_date, INTERVAL n DAY) AS date,
+                COUNT(*) AS count
+            FROM task,
+            (SELECT @rownum := @rownum + 1 AS n
+            FROM (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10) a,
+                 (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10) b
+            ) numbers
+            WHERE user_id = #{userId}
+            AND type = 'recurring'
+            AND period = 'daily'
+            AND start_date <= DATE_ADD(CONCAT(#{year}, '-', #{month}, '-01'), INTERVAL 1 MONTH)
+            AND end_date >= CONCAT(#{year}, '-', #{month}, '-01')
+            GROUP BY DATE_ADD(start_date, INTERVAL n DAY)
+        ]]>
+    </select>
+    <select id="selectDailyCompletion" resultType="com.vksfeng.quan.analysis_pojo.entity.TaskCompletionDay">
+        SELECT
+        DATE(completed_at) AS date,
+        COUNT(id) AS count
+        FROM task_completion
+        WHERE
+        user_id = #{userId}
+        AND YEAR(completed_at) = #{year}
+        <if test="month != -1">
+            AND MONTH(completed_at) = #{month}
+        </if>
+        GROUP BY DATE(completed_at)
+        ORDER BY date ASC
+    </select>
+    <select id="getLatestCompletionRecordId" resultType="java.lang.Long">
+        SELECT id FROM task_completion WHERE taks_id = #{taskId} ORDER BY completed_at DESC LIMIT 1
+    </select>
+    <select id="getWeeklyTaskLeaderboard" resultType="com.vksfeng.quan.analysis_pojo.vo.LeaderboardCountVO">
+        SELECT
+        u.id AS user_id,
+        u.username,
+        u.avatar_url,
+        COALESCE(COUNT(t.id), 0) AS complete_count
+        FROM user u
+        LEFT JOIN task_completion t ON u.id = t.user_id
+        AND t.completed_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        WHERE u.id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY u.id, u.username, u.avatar_url
+        ORDER BY complete_count DESC
+    </select>
+
+
+    <select id="getMonthlyTaskLeaderboard" resultType="com.vksfeng.quan.analysis_pojo.vo.LeaderboardCountVO">
+        SELECT
+        u.id AS user_id,
+        u.username,
+        u.avatar_url,
+        COALESCE(COUNT(t.id), 0) AS complete_count
+        FROM user u
+        LEFT JOIN task_completion t ON u.id = t.user_id
+        AND t.completed_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+        WHERE u.id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY u.id, u.username, u.avatar_url
+        ORDER BY complete_count DESC
+    </select>
+    <select id="getTaskCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM task WHERE user_id = #{userId}
+    </select>
+    <select id="getCompletedTaskCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM task_completion WHERE user_id = #{userId}
+    </select>
+    <select id="getTotalCount" resultType="com.vksfeng.quan.analysis_pojo.vo.TaskCompletionRateVO">
+        <![CDATA[
+            SELECT DATE(ddl) AS date, COUNT(id) AS totalCount
+            FROM task
+            WHERE user_id = #{userId}
+            AND (
+            (type = 'single' AND DATE(ddl) BETWEEN #{startDate} AND #{endDate})
+            OR
+            (type = 'recurring' AND DATE(start_date) <= #{endDate} AND (end_date IS NULL OR DATE(end_date) >= #{startDate}))
+            )
+            GROUP BY date
+        ]]>
+    </select>
+    <select id="getCompleteCount" resultType="com.vksfeng.quan.analysis_pojo.vo.TaskCompletionRateVO">
+        SELECT DATE(completed_at) AS date, COUNT(id) AS completeCount
+        FROM task_completion
+        WHERE user_id = #{userId}
+        AND DATE(completed_at) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date
+    </select>
+    <select id="findRecurringCompletedTasks" resultType="com.vksfeng.quan.objectivehub_pojo.entity.Task">
+        SELECT *
+        FROM task
+        WHERE type = 'recurring'
+        AND status = 'completed'
+    </select>
+    <select id="getYearlyTasksHeatMap" resultType="com.vksfeng.quan.analysis_pojo.vo.HeatMapVO">
+        SELECT
+        DATE(completed_at) AS date,
+        COUNT(*) AS count
+        FROM task_completion
+        WHERE
+        user_id = #{userId}
+        AND YEAR(completed_at) = #{year}
+        GROUP BY DATE(completed_at)
+        ORDER BY date ASC
+    </select>
+
+
+</mapper>

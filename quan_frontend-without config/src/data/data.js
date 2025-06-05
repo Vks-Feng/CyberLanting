@@ -1,0 +1,197 @@
+const tasks = [
+  {
+    id: 100,
+    user_id: 1,
+    name: "阅读Spring Boot文档",
+    description: "阅读官方文档，了解核心概念",
+    type: "single",
+    status: "completed",
+    completed_at: "2025-03-05T14:20:00",
+    ddl: "2025-03-10",
+    visibility: 1,
+    created_at: "2025-03-01T12:30:00",
+    updated_at: "2025-03-05T14:30:00",
+  },
+  {
+    id: 101,
+    user_id: 1,
+    name: "每日编写Spring Boot代码",
+    description: "每天写一个小功能练习Spring Boot",
+    type: "recurring",
+    status: "pending",
+    period: "1",
+    start_date: "2025-03-01",
+    end_date: "2025-06-01",
+    visibility: 0,
+    created_at: "2025-03-01T12:40:00",
+    updated_at: "2025-03-10T18:00:00",
+  },
+  {
+    id: 102,
+    user_id: 2,
+    name: "每周去健身房",
+    description: "每周至少去健身房3次",
+    type: "recurring",
+    status: "pending",
+    period: "7",
+    start_date: "2025-02-01",
+    end_date: "2025-05-01",
+    visibility: 1,
+    created_at: "2025-02-01T15:00:00",
+    updated_at: "2025-03-08T10:30:00",
+  },
+];
+
+const objs = [
+  {
+    id: 10,
+    user_id: 1,
+    name: "学习Spring Boot",
+    description: "深入学习Spring Boot 3.x",
+    start_date: "2025-03-01",
+    end_date: "2025-06-01",
+    progress: 40.0,
+    weight: 1.0,
+    visibility: 1,
+    created_at: "2025-03-01T12:00:00",
+    updated_at: "2025-03-10T08:30:00",
+  },
+  {
+    id: 11,
+    user_id: 1,
+    name: "完成Spring Boot示例项目",
+    description: "基于Spring Boot开发一个小型Web应用",
+    start_date: "2025-03-10",
+    end_date: "2025-05-01",
+    progress: 20.0,
+    weight: 1.2,
+    visibility: 0,
+    created_at: "2025-03-05T09:00:00",
+    updated_at: "2025-03-11T11:45:00",
+  },
+  {
+    id: 12,
+    user_id: 2,
+    name: "健身计划",
+    description: "坚持健身三个月，提升身体素质",
+    start_date: "2025-02-01",
+    end_date: "2025-05-01",
+    progress: 60.0,
+    weight: 1.5,
+    visibility: 1,
+    created_at: "2025-02-01T10:00:00",
+    updated_at: "2025-03-01T15:30:00",
+  },
+  {
+    id: 13,
+    user_id: 3,
+    name: "学习前端开发",
+    description: "掌握React和Vue.js的基础",
+    start_date: "2025-03-01",
+    end_date: "2025-07-01",
+    progress: 30.0,
+    weight: 1.3,
+    visibility: 0,
+    created_at: "2025-03-02T12:30:00",
+    updated_at: "2025-03-12T18:45:00",
+  },
+];
+
+const userObjInfo = {
+  code: 1,
+  msg: "成功",
+  data: [
+    {
+      id: 10,
+      userId: 1,
+      name: "学习Spring Boot",
+      description: "深入学习Spring Boot 3.x",
+      startDate: "2025-03-01",
+      endDate: "2025-06-01",
+      visibility: 1,
+      progress: 0,
+      weight: 1,
+      createdAt: "2025-03-01",
+      children: [
+        {
+          id: 11,
+          name: "完成Spring Boot示例项目",
+          description: "深入学习Spring Boot 3.x",
+          startDate: "2025-03-01",
+          endDate: "2025-06-01",
+          visibility: 1,
+          progress: 0,
+          weight: 1,
+          createdAt: "2025-03-01",
+          children: [],
+          tasks: [
+            {
+              id: 101,
+              userId: 1,
+              objectiveId: 11,
+              name: "每日编写Spring Boot代码",
+              description: "每天写一个小功能练习Spring Boot",
+              status: "pending",
+              visibility: 1,
+              type: "recurring",
+              createdAt: "2025-03-01",
+              ddl: "",
+              completedAt: "",
+              period: "daily",
+              startDate: "2025-03-01",
+              endDate: "2025-06-01",
+            },
+            {
+              id: 100,
+              userId: 1,
+              objectiveId: 11,
+              name: "阅读Spring Boot文档",
+              description: "阅读官方文档，了解核心概念",
+              status: "pending",
+              visibility: 1,
+              type: "single",
+              createdAt: "2025-03-01",
+              ddl: "2025-03-10",
+              completedAt: "",
+              period: "",
+              startDate: "",
+              endDate: "",
+            },
+          ],
+        },
+      ],
+      tasks: [],
+    },
+  ],
+};
+
+// ObjRelationMap 关系图谱结点示例
+const formedData = {
+    nodes: [
+        { name: 'AnalyserNode', value: 1, category: 4 },
+        { name: 'AudioNode', value: 2, category: 3 },
+        { name: 'OscillatorNode', value: 3, category: 2 },
+        { name: 'GainNode', value: 2, category: 1 },
+        { name: 'DestinationNode', value: 3, category: 0 }
+    ],
+    categories: [
+        { name: 'HTMLElement', keyword: {} },
+        { name: 'Audio Processing' },
+        { name: 'Oscillator' },
+        { name: 'Gain Control' },
+        { name: 'Analyser' }
+    ],
+    links: [
+        { source: 0, target: 4 },
+        { source: 1, target: 0 },
+        { source: 2, target: 0 },
+        { source: 3, target: 0 }
+    ]
+};
+
+
+export default {
+  tasks,
+  objs,
+  userObjInfo
+};

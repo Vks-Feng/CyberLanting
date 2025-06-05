@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.mapper.UserMapper">
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into user (username, password, email, nickname, avatar_url, created_at, updated_at)
+        values (#{username}, #{password}, #{email}, #{nickname}, #{avatarUrl}, #{createdAt}, #{updatedAt})
+    </insert>
+    <update id="update">
+        update user
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="saveUserLocation">
+        INSERT INTO user_location (user_id, latitude, longitude, last_update)
+        VALUES (#{userId}, #{latitude}, #{longitude}, #{lastUpdate})
+        ON DUPLICATE KEY UPDATE
+        latitude = #{latitude},
+        longitude = #{longitude},
+        last_update = #{lastUpdate};
+    </insert>
+
+    <select id="findUser" resultType="com.vksfeng.quan.user_pojo.entity.User">
+        select * from user
+        <where>
+            <if test="username != null">
+                and username = #{username}
+            </if>
+            <if test="email != null">
+                and email = #{email}
+            </if>
+            <if test="nickname != null">
+                and name like concat('%', #{name}, '%')
+            </if>
+        </where>
+        order by created_at desc
+    </select>
+    <select id="getUserById" resultType="com.vksfeng.quan.user_pojo.entity.User">
+        select * from user where id = #{id}
+    </select>
+    <select id="searchUsers" resultType="com.vksfeng.quan.peerhub_pojo.vo.UserSearchVO">
+        SELECT
+        u.id,
+        u.username,
+        u.email,
+        u.nickname,
+        u.avatar_url,
+        CASE
+        WHEN f.user_id IS NOT NULL THEN TRUE
+        ELSE FALSE
+        END AS isFriend
+        FROM user u
+        LEFT JOIN (
+        SELECT friend_id AS uid, user_id FROM friendship WHERE user_id = #{currentUserId}
+        UNION
+        SELECT user_id AS uid, friend_id AS user_id FROM friendship WHERE friend_id = #{currentUserId}
+        ) f ON u.id = f.uid
+        WHERE u.id IN
+        <foreach item="id" collection="userIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

@@ -1,0 +1,225 @@
+@import url("https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap");
+
+:root {
+  --ink-black: #262626;
+  --ink-gray: #4a4a4a;
+  --paper-white: #f5f5f5;
+  --paper-gray: #e8e8e8;
+}
+
+/* 去掉主页滚动条 */
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  background-color: var(--paper-white);
+  color: var(--ink-black);
+  font-family: 'Times New Roman', "Ma Shan Zheng", serif;
+  font-size: 22px;
+  /* cursor: url("/images/cursor.png"), auto; */
+}
+
+
+.ink-button {
+  background-color: var(--ink-grey);
+  /* color: var(--paper-white); */
+  color: #2C2C2C;
+  border: 1px solid var(--ink-black);
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-family: 'Times New Roman', "Ma Shan Zheng", serif;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.ink-drawer-button {
+  background-color: var(--ink-black);
+  color: var(--ink-black);
+  border: 1px solid var(--ink-black);
+  padding: 20px;
+  margin: 20px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-family: 'Times New Roman', "Ma Shan Zheng", serif;
+
+  font-size: 18px;
+}
+
+.ink-button:hover {
+  background-color: var(--paper-white);
+  color: var(--ink-black);
+  border: 1px solid #2C2C2C;
+}
+
+.ink-input {
+  background-color: var(--paper-white);
+  border: 1px solid var(--ink-gray);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: 'Times New Roman', "Ma Shan Zheng", serif;
+
+}
+
+.ink-input:focus {
+  outline: none;
+  border-color: var(--ink-black);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.ink-card {
+  background-color: var(--paper-white);
+  border: 1px solid var(--ink-gray);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ink-title {
+  color: var(--ink-black);
+  font-family: 'Times New Roman', "Ma Shan Zheng", serif;
+
+  border-bottom: 2px solid var(--ink-black);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.el-button,
+.el-menu,
+.el-menu-item {
+  /* background-color: transparent !important; */
+  backdrop-filter: blur(2px);
+  /* 设置磨砂效果的强度 */
+  background: rgba(255, 255, 255, 0.3);
+  /* 半透明背景 */
+  border-radius: 10px;
+}
+
+
+
+/* .el-menu-item:hover{
+  background-color: gray;
+  color:var(--ink-gray);
+}
+
+.el-menu-item.is-active{
+  background-color: #4a4a4a;
+  color: white;
+} */
+
+/* 卡片总样式 */
+.el-card {
+  margin-bottom: 15px;
+  cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+/* 1. Drawer 容器整体样式 */
+.el-drawer {
+  /* background: rgba(255, 255, 255, 0.7); */
+  background-image: url("/images/bg-.jpg");
+  /* 半透明 */
+  backdrop-filter: blur(20px);
+  /* 毛玻璃模糊 */
+  /* border-left: 6px solid rgba(0, 0, 0, 0.05);  */
+  /* 墨痕边界 */
+  border-radius: 2px 0 0 2px;
+  /* 左边圆角 */
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  /* position: relative; */
+  font-family: "STKaiti", "仿宋", "Noto Serif SC", serif;
+}
+
+/* 3. 内容容器样式微调 */
+.el-drawer__body {
+  padding: 20px;
+  z-index: 1;
+  position: relative;
+  color: #2f2f2f;
+}
+
+/* 4. 标题样式（如使用 el-drawer title 插槽） */
+.el-drawer__header {
+  font-size: 20px;
+  font-weight: bold;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  color: #1f1f1f;
+}
+
+/* 5. 关闭按钮手绘感 */
+.el-drawer__close-btn {
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+.el-drawer__close-btn:hover {
+  transform: scale(1.1);
+  background-color: rgba(240, 240, 240, 0.9);
+}
+
+.el-progress-bar__inner{
+  background-color: #3A6E64;
+}
+
+/* menu-item图标样式 */
+.icon-menu {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+/* 按钮通用类：图标在上，文字在下 */
+.sidebar-icon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* border: none; */
+  border-color: black;
+  background: transparent;
+  box-shadow: none;
+  padding: 10px;
+  margin-right: 70px;
+  height: 60px;
+  width: 60px;
+  /* color: var(--el-color-primary);  */
+}
+
+.icon-text-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-text-column .el-icon {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.icon-text-column .btn-text {
+  font-size: 14px;
+  color: #333;
+}
+.el-checkbox__inner {
+  color: #3A6E64;
+  border-radius: 7px
+}
+
+.el-checkbox{
+  --el-checkbox-checked-bg-color: #3A6E64;
+  --el-checkbox-checked-text-color: #3A6E64;
+    --el-checkbox-checked-input-border-color: #3A6E64;
+}

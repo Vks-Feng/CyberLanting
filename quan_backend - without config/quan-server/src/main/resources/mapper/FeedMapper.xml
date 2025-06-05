@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.mapper.FeedMapper">
+
+    <resultMap id="FeedVOMap" type="com.vksfeng.quan.peerhub_pojo.vo.FeedVO">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="type" column="type"/>
+        <result property="relatedId" column="related_id"/>
+        <result property="content" column="content"/>
+        <result property="likeCount" column="count_like"/>
+        <result property="commentCount" column="count_comment"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="isLiked" column="is_liked"/>
+        <association property="user" javaType="com.vksfeng.quan.user_pojo.vo.UserVO">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="email" column="email"/>
+            <result property="nickname" column="nickname"/>
+            <result property="avatarUrl" column="avatar_url"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="FeedCommentVOMap" type="com.vksfeng.quan.peerhub_pojo.vo.FeedVO">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="user" javaType="com.vksfeng.quan.user_pojo.vo.UserVO">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="email" column="email"/>
+            <result property="nickname" column="nickname"/>
+            <result property="avatarUrl" column="avatar_url"/>
+        </association>
+    </resultMap>
+
+    <delete id="removeFeedLike">
+        DELETE FROM feed_like
+        WHERE feed_id = #{feedId} AND user_id = #{userId}
+    </delete>
+
+    <select id="getFeedById" resultMap="FeedVOMap">
+        SELECT
+        f.id, f.user_id, f.type, f.related_id, f.content, f.created_at, f.updated_at,
+        (SELECT COUNT(*) FROM feed_like fl WHERE fl.feed_id = f.id) AS count_like,
+        (SELECT COUNT(*) FROM feed_comment fc WHERE fc.feed_id = f.id) AS count_comment,
+        (SELECT COUNT(*) FROM feed_like fl WHERE fl.feed_id = f.id AND fl.user_id = #{userId}) > 0 AS is_liked,
+        u.id AS user_id, u.username, u.email, u.nickname, u.avatar_url
+        FROM feed f
+        JOIN user u ON f.user_id = u.id
+        WHERE f.id = #{feedId}
+    </select>
+
+
+    <select id="page" resultMap="FeedVOMap">
+        SELECT
+        f.id, f.user_id, f.type, f.related_id, f.content, f.created_at, f.updated_at,
+        COALESCE(like_count, 0) AS count_like,
+        COALESCE(comment_count, 0) AS count_comment,
+        CASE WHEN fl.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_liked,  -- 是否点赞
+        u.id AS user_id, u.username, u.email, u.nickname, u.avatar_url
+        FROM feed f
+        JOIN user u ON f.user_id = u.id
+        LEFT JOIN (
+        SELECT feed_id, COUNT(*) AS like_count FROM feed_like GROUP BY feed_id
+        ) AS likes ON f.id = likes.feed_id
+        LEFT JOIN (
+        SELECT feed_id, COUNT(*) AS comment_count FROM feed_comment GROUP BY feed_id
+        ) AS comments ON f.id = comments.feed_id
+        LEFT JOIN feed_like fl ON f.id = fl.feed_id AND fl.user_id = #{userId}  -- 判断当前用户是否点赞
+        WHERE f.user_id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+        ORDER BY f.created_at DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+
+    <insert id="addFeedLike">
+        insert into feed_like (feed_id, user_id, created_at)
+        values (#{feedId}, #{userId}, #{createdAt})
+    </insert>
+
+    <insert id="addFeedComment">
+        insert into feed_comment (feed_id, user_id, content, created_at)
+        values (#{feedId}, #{userId}, #{content}, #{createdAt})
+    </insert>
+
+    <insert id="insertFeed" parameterType="com.vksfeng.quan.peerhub_pojo.entity.Feed">
+        INSERT INTO feed (user_id, type, related_id, content, created_at, updated_at)
+        VALUES (#{userId}, #{type}, #{relatedId}, #{content}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <select id="count" resultType="java.lang.Integer">
+        select count(*) from feed
+    </select>
+
+    <select id="getCommentList" resultMap="FeedCommentVOMap">
+        SELECT fc.*,
+        u.id AS user_id, u.username, u.email, u.nickname, u.avatar_url
+        FROM feed_comment fc
+        JOIN user u ON fc.user_id = u.id
+        WHERE fc.feed_id = #{feedId}
+        ORDER BY fc.created_at DESC
+    </select>
+    <select id="getFeedLike" resultType="com.vksfeng.quan.peerhub_pojo.entity.FeedLike">
+        SELECT * FROM feed_like WHERE feed_id = #{feedId} AND user_id = #{userId}
+    </select>
+
+</mapper>

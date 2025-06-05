@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.achievement.mapper.AchievementMapper">
+    <insert id="insert">
+        insert into achievement (code, name, description, icon_url, type, rule_json, created_at)
+        values (#{code}, #{name}, #{description}, #{iconUrl}, #{type}, #{ruleJson}, #{createdAt})
+    </insert>
+
+
+    <select id="findByType" resultType="com.vksfeng.quan.achievement.pojo.entity.Achievement">
+        select * from achievement where type = #{type}
+    </select>
+</mapper>

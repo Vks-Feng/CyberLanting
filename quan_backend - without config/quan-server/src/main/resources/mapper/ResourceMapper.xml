@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.mapper.ResourceMapper">
+
+    <resultMap id="ResourceVOMap" type="com.vksfeng.quan.resourcehub_pojo.vo.ResourceVO">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="category" column="category"/>
+        <result property="url" column="url"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="favoriteCount" column="favorite_count"/>
+        <result property="isLiked" column="is_liked"/>
+        <result property="isFavorite" column="is_favorite"/>
+        <association property="userVO" javaType="com.vksfeng.quan.user_pojo.vo.UserVO">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="email" column="email"/>
+            <result property="nickname" column="nickname"/>
+            <result property="avatarUrl" column="avatar_url"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="ResourceCommentVOMap" type="com.vksfeng.quan.resourcehub_pojo.vo.ResourceCommentVO">
+        <id property="id" column="id"/>
+        <result property="resourceId" column="resource_id"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="userVO" javaType="com.vksfeng.quan.user_pojo.vo.UserVO">
+            <id property="id" column="user_id"/>
+            <result property="username" column="username"/>
+            <result property="email" column="email"/>
+            <result property="nickname" column="nickname"/>
+            <result property="avatarUrl" column="avatar_url"/>
+        </association>
+    </resultMap>
+
+    <insert id="createResource" useGeneratedKeys="true" keyProperty="id">
+        insert into resource (user_id, title, description, category, url, content, created_at, updated_at)
+        values (#{userId}, #{title}, #{description}, #{category}, #{url}, #{content}, #{createdAt}, #{updatedAt})
+    </insert>
+    <insert id="addLike">
+        insert into resource_like (user_id, resource_id, created_at)
+        values (#{userId}, #{resourceId}, #{createdAt})
+    </insert>
+    <insert id="addComment" useGeneratedKeys="true" keyProperty="id">
+        insert into resource_comment (user_id, resource_id, content, created_at)
+        values (#{userId}, #{resourceId}, #{content}, #{createdAt})
+    </insert>
+    <insert id="addFavorite">
+        insert into resource_favorite (user_id, resource_id, created_at)
+        values (#{userId}, #{resourceId}, #{createdAt})
+    </insert>
+    <delete id="deleteResource">
+        delete from resource
+        where id = #{id} and user_id = #{userId}
+    </delete>
+    <delete id="removeLike">
+        delete from resource_like
+        where user_id = #{userId} and resource_id = #{resourceId}
+    </delete>
+    <delete id="removeFavorite">
+        delete from resource_favorite
+        where user_id = #{userId} and resource_id = #{resourceId}
+    </delete>
+    <select id="getResourceById" resultMap="ResourceVOMap">
+        select
+        r.id, r.user_id, r.title, r.description, r.category,
+        r.url, r.content, r.created_at, r.updated_at,
+        u.id as user_id, u.username, u.email, u.nickname, u.avatar_url,
+        (select count(*) from resource_like rl where rl.resource_id = r.id) as like_count,
+        (select count(*) from resource_comment rc where rc.resource_id = r.id) as comment_count,
+        (select count(*) from resource_favorite rf where rf.resource_id = r.id) as favorite_count,
+        (select count(*) from resource_like rl where rl.resource_id = r.id and rl.user_id = #{currentUserId}) > 0 as is_liked,
+        (select count(*) from resource_favorite rf where rf.resource_id = r.id and rf.user_id = #{currentUserId}) > 0 as is_favorite
+        from resource r
+        left join user u on r.user_id = u.id
+        where r.id = #{id}
+    </select>
+    <select id="getResourceList" resultMap="ResourceVOMap">
+        select
+        r.id, r.user_id, r.title, r.description, r.category,
+        r.url, r.content, r.created_at, r.updated_at,
+        u.id as user_id, u.username, u.email, u.nickname, u.avatar_url,
+        (select count(*) from resource_like rl where rl.resource_id = r.id) as like_count,
+        (select count(*) from resource_comment rc where rc.resource_id = r.id) as comment_count,
+        (select count(*) from resource_favorite rf where rf.resource_id = r.id) as favorite_count,
+        (select count(*) from resource_like rl where rl.resource_id = r.id and rl.user_id = #{currentUserId}) > 0 as is_liked,
+        (select count(*) from resource_favorite rf where rf.resource_id = r.id and rf.user_id = #{currentUserId}) > 0 as is_favorite
+        from resource r
+        left join user u on r.user_id = u.id
+        where r.user_id in
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+        <if test="category != null and category != ''">
+            and r.category = #{category}
+        </if>
+        order by r.created_at desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+
+    <select id="isLiked" resultType="java.lang.Boolean">
+        select exists(select 1 from resource_like where user_id = #{userId} and resource_id = #{resourceId})
+    </select>
+    <select id="getResourceCommentById" resultMap="ResourceCommentVOMap">
+        select rc.id, rc.resource_id, rc.content, rc.created_at,
+        u.id as user_id, u.username, u.email, u.nickname, u.avatar_url
+        from resource_comment rc
+        left join user u on u.id = rc.user_id
+        where rc.id = #{commentId}
+    </select>
+    <select id="getCommentsByResourceId" resultMap="ResourceCommentVOMap">
+        select rc.id, rc.resource_id, rc.content, rc.created_at,
+        u.id as user_id, u.username, u.email, u.nickname, u.avatar_url
+        from resource_comment rc
+        left join user u on u.id = rc.user_id
+        where rc.resource_id = #{id}
+    </select>
+    <select id="isFavorite" resultType="java.lang.Boolean">
+        select exists(select 1 from resource_favorite where user_id = #{userId} and resource_id = #{resourceId})
+    </select>
+    <select id="getResourceCount" resultType="java.lang.Integer">
+        select count(*) from resource
+        <where>
+            <if test="category != null and category != ''">
+                category = #{category}
+            </if>
+            <if test="userIds != null and userIds.size() > 0">
+                and user_id in
+                <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getFavoriteList" resultMap="ResourceVOMap">
+        select
+        r.id, r.user_id, r.title, r.description, r.category,
+        r.url, r.content, r.created_at, r.updated_at,
+        u.id as user_id, u.username, u.email, u.nickname, u.avatar_url,
+        (select count(*) from resource_like rl where rl.resource_id = r.id) as like_count,
+        (select count(*) from resource_comment rc where rc.resource_id = r.id) as comment_count,
+        (select count(*) from resource_favorite rf where rf.resource_id = r.id) as favorite_count
+        from resource r
+        left join user u on r.user_id = u.id
+        left join resource_favorite rf on rf.resource_id = r.id and rf.user_id = #{userId}
+        where rf.user_id IS NOT NULL
+        <if test="category != null and category != ''">
+            and r.category = #{category}
+        </if>
+        order by r.created_at desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <select id="getFavoriteResourceCount" resultType="java.lang.Integer">
+        select count(*) from resource_favorite rf
+        left join resource r on rf.resource_id = r.id
+        where rf.user_id = #{userId}
+        <if test="category != null and category != ''">
+            and r.category = #{category}
+        </if>
+    </select>
+    <select id="getUserReceivedLikes" resultType="java.lang.Integer">
+        select count(*) from resource_like rl
+        left join resource r on rl.resource_id = r.id
+        where rl.user_id = #{userId}
+    </select>
+    <select id="getUserReceivedComments" resultType="java.lang.Integer">
+        select count(*) from resource_comment rc
+        left join resource r on rc.resource_id = r.id
+        where rc.user_id = #{userId}
+    </select>
+    <select id="getUserReceivedFavorites" resultType="java.lang.Integer">
+        select count(*) from resource_favorite rf
+        left join resource r on rf.resource_id = r.id
+        where rf.user_id = #{userId}
+    </select>
+
+</mapper>

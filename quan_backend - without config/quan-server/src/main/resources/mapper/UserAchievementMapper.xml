@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.achievement.mapper.UserAchievementMapper">
+    <insert id="insert">
+        INSERT INTO user_achievement
+        (user_id, achievement_id, achieved_at)
+        VALUES
+        (#{userId}, #{achievementId}, #{achievedAt})
+    </insert>
+
+
+    <select id="exists" resultType="java.lang.Boolean">
+        SELECT
+        EXISTS (
+            SELECT 1
+            FROM user_achievement
+            WHERE user_id = #{userId}
+            AND achievement_id = #{achievementId}
+        )
+    </select>
+    <select id="getUserAchievement" resultType="com.vksfeng.quan.achievement.pojo.vo.UserAchievementVO">
+        SELECT
+            ua.achieved_at,
+            a.name,
+            a.description,
+            a.icon_url
+        FROM user_achievement ua
+        JOIN achievement a ON ua.achievement_id = a.id
+        WHERE ua.user_id = #{userId}
+        ORDER BY ua.achieved_at ASC
+    </select>
+</mapper>

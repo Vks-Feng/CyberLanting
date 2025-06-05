@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vksfeng.quan.mapper.FriendshipMapper">
+    <insert id="insert">
+        insert into friendship (user_id, friend_id, status, created_at, updated_at)
+        values (#{userId}, #{friendId}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update">
+        update friendship
+        set status = #{status}, updated_at = #{updatedAt}
+        where user_id = #{userId} and friend_id = #{friendId}
+    </update>
+    <delete id="remove">
+        delete from friendship
+        where
+            (user_id = #{userId} and friend_id = #{friendId})
+            or
+            (user_id = #{friendId} and friend_id = #{userId})
+    </delete>
+
+    <select id="list" resultType="com.vksfeng.quan.user_pojo.vo.UserVO">
+        SELECT
+        u.id,
+        u.username,
+        u.email,
+        u.nickname,
+        u.avatar_url
+        FROM user u
+        INNER JOIN friendship f
+        ON u.id = f.friend_id AND f.user_id = #{userId}
+        OR u.id = f.user_id AND f.friend_id = #{userId}
+        WHERE f.status = 'accepted'
+    </select>
+
+    <select id="getRequests" resultType="com.vksfeng.quan.user_pojo.vo.UserVO">
+        select u.id, u.username, u.email, u.nickname, u.avatar_url from user u
+        inner join friendship f on u.id = f.user_id
+        where f.friend_id = #{userId} and f.status = 'pending'
+    </select>
+    <select id="selectByTwoId" resultType="com.vksfeng.quan.peerhub_pojo.entity.Friendship">
+        select * from friendship where (user_id = #{aId} and friend_id = #{bId}) or (user_id = #{bId} and friend_id = #{aId})
+    </select>
+    <select id="countFriends" resultType="java.lang.Integer">
+        select count(*) from friendship where user_id = #{userId} or friend_id = #{userId}
+    </select>
+</mapper>
